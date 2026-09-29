@@ -7,7 +7,7 @@
     "build": "tsc",
     "build:lab01": "node scripts/build-lab01.mjs",
     "build:all": "npm run build && npm run build:lab01",
-    "dev": "npm run build && node server.mjs"
+    "dev": "npm run build:all && node server.mjs"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Лабораторная 1: обратная связь по температуре топлива</title>
   <link rel="stylesheet" href="./katex.min.css">
-  <style>
-    :root{font-family:system-ui,sans-serif;color:#172033;background:#eef2f7;line-height:1.45}
-    *{box-sizing:border-box}body{max-width:1200px;margin:auto;padding:20px}h1{font-size:clamp(1.5rem,3vw,2.35rem);line-height:1.15}h2{margin-top:0}.card{background:#fff;border:1px solid #d7dfeb;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 5px 18px #1720330b}.lead{color:#53627a}.formula{background:#f6f8fb;border-left:4px solid #4468a8;padding:16px 12px;overflow:auto}.formula .katex-display{margin:.35em 0}.formula-inline .katex{font-size:1.08em}.math-label .katex{font-size:1.05em}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.control{display:grid;gap:5px}.control>span{font-weight:600;min-height:1.7em;display:flex;align-items:center}.control>span .katex{font-size:1.05em}input,button{font:inherit}input[type=number],select,button{border:1px solid #bdc9d8;border-radius:8px;padding:8px;background:#fff}input[type=range]{width:100%}button{cursor:pointer;background:#173b70;color:white;border-color:#173b70}button.secondary{background:#fff;color:#173b70}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.plot{width:100%;height:270px;border:1px solid #d7dfeb;border-radius:10px;background:#fff}.plot-title{font-weight:700;margin-bottom:5px}.plot-title .katex{font-size:1.05em}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #ccd6e2;padding:10px;text-align:center;vertical-align:middle}th{background:#e8eef7}.note{font-size:.92rem;color:#56647a}.status{font-weight:700;color:#173b70}@media(max-width:600px){body{padding:10px}.card{padding:13px}.plot{height:230px}table{font-size:.82rem}}
-  </style>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <header class="card">
@@ -135,23 +132,6 @@
   <section class="card"><h2>Показатели переходного процесса</h2><table><thead><tr><th><span class="math-label">\(r\)</span></th><th><span class="math-label">\(S\)</span></th><th><span class="math-label">\(N_{\mathrm{экстр}}\)</span></th><th><span class="math-label">\(N_{\mathrm{кон}}\)</span></th><th><span class="math-label">\(T_{T,\,\mathrm{кон}}\)</span>, <span class="math-label">\(^{\circ}\mathrm{C}\)</span></th><th><span class="math-label">\(\Delta\rho\)</span></th><th><span class="math-label">\(\Delta\rho/\beta\)</span></th></tr></thead><tbody id="metrics"></tbody></table></section>
 
   <script src="./katex.min.js"></script>
-  <script>
-    for (const element of document.querySelectorAll('.math-display, .formula-inline, .math-label')) {
-      const source = element.textContent.trim().replace(/^\\\(|\\\)$/g, '');
-      katex.render(source, element, {
-        displayMode: element.classList.contains('math-display'),
-        throwOnError: false,
-      });
-    }
-    const $=id=>document.getElementById(id), saved=[];
-    const C={l:1e-3,beta:.0065,T0:800,Tbo:300,kn:.147,kt:.236};
-    function rhs(y,p){const [n,c,t]=y;return [((C.beta*(p.r-1)-p.s*.02*(t-1))/C.l)*n+(C.beta/C.l)*c,p.lambda*(n-c),C.kn*n-C.kt*(t-C.Tbo/C.T0)];}
-    function step(y,p){const add=(a,b,f)=>a.map((v,i)=>v+f*b[i]);const k1=rhs(y,p),k2=rhs(add(y,k1,p.h/2),p),k3=rhs(add(y,k2,p.h/2),p),k4=rhs(add(y,k3,p.h),p);return y.map((v,i)=>v+p.h*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6)}
-    function simulate(p){const count=Math.round(p.tEnd/p.h),t=[],y=[1,1,1],out=[[] ,[],[]];for(let i=0;i<=count;i++){t.push(i*p.h);out.forEach((a,j)=>a.push(y[j]));if(i<count){const next=step(y,p);y.splice(0,3,...next)}}return {t,n:out[0],c:out[1],temp:out[2]}}
-    function draw(id,x,y,color,label){const cv=$(id),d=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*d;cv.height=h*d;const g=cv.getContext('2d');g.scale(d,d);g.clearRect(0,0,w,h);const pad={l:42,r:12,t:16,b:28},xx=w-pad.l-pad.r,yy=h-pad.t-pad.b,min=Math.min(...y),max=Math.max(...y),lo=min===max?min-1:min,hi=min===max?max+1:max;g.strokeStyle='#dbe3ee';g.lineWidth=1;for(let i=0;i<5;i++){const py=pad.t+yy*i/4;g.beginPath();g.moveTo(pad.l,py);g.lineTo(w-pad.r,py);g.stroke();g.fillStyle='#59677d';g.font='11px system-ui';g.fillText((hi-(hi-lo)*i/4).toPrecision(3),3,py+4)}g.strokeStyle=color;g.lineWidth=2;g.beginPath();y.forEach((v,i)=>{const px=pad.l+xx*i/(x.length-1),py=pad.t+yy*(hi-v)/(hi-lo);i?g.lineTo(px,py):g.moveTo(px,py)});g.stroke();g.fillStyle='#59677d';g.fillText('0',pad.l,h-8);g.fillText(x[x.length-1].toFixed(1)+' с',w-45,h-8);g.fillText(label,pad.l+4,12)}
-    function metrics(p,res){const tail=res.n.slice(1),i=1+(p.r>0?tail.indexOf(Math.max(...tail)):tail.indexOf(Math.min(...tail))),end=res.n.length-1,d=p.s*(-2.5e-5)*(C.T0-res.temp[end]*C.T0);return [p.r,p.s,res.n[i],res.n[end],res.temp[end]*C.T0,d,d/C.beta]}
-    function run(){const p={r:+$('r').value,s:+$('s').value,lambda:+$('lambda').value,h:+$('h').value,tEnd:+$('tEnd').value};if(!(p.h>0&&p.tEnd>0&&p.lambda>0))return;$('status').textContent='Расчёт выполняется...';const res=simulate(p),m=metrics(p,res);draw('power',res.t,res.n,'#2563eb','N');draw('temp',res.t,res.temp.map(v=>v*C.T0),'#d35445','TТ, °C');draw('precursors',res.t,res.c,'#25805b','C');$('metrics').innerHTML='<tr>'+m.map((v,i)=>'<td>'+((i===5||i===6)?v.toExponential(3):typeof v==='number'?v.toFixed(i>1?4:2):v)+'</td>').join('')+'</tr>';$('status').textContent=`Расчёт: ${res.t.length} точек, t=${p.tEnd} с`;return {p,res,m}}
-    const parameterIds=['r','s','lambda','h','tEnd'];parameterIds.forEach(id=>{const number=$(id),range=$(id+'Range');range.addEventListener('input',()=>{number.value=range.value;run()});number.addEventListener('input',()=>{if(number.value!=='')range.value=number.value});number.addEventListener('change',run)});document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const open=b.dataset.preset==='open';setParameter('r',b.dataset.preset==='negative'?-0.3:0.3);setParameter('s',open?0:1);run()});function setParameter(id,value){$(id).value=value;$(id+'Range').value=value}$('save').onclick=()=>{const x=run();saved.push(x);$('status').textContent=`Сохранено вариантов: ${saved.length}`};$('clear').onclick=()=>{saved.length=0;run()};$('export').onclick=()=>{if(!saved.length){const x=run();saved.push(x)}let csv='run,t,N,C,T\n';saved.forEach((x,k)=>x.res.t.forEach((t,i)=>csv+=`${k+1},${t},${x.res.n[i]},${x.res.c[i]},${x.res.temp[i]}\n`));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='lab01_temperature_feedback.csv';a.click()};window.addEventListener('resize',run);run();
-  </script>
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>
