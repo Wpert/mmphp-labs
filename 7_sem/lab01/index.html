@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лабораторная работа 1 | Обратная связь по мощности</title>
+    <link rel="stylesheet" href="./katex.min.css" />
+    <style>
+      :root { color-scheme: light; font-family: system-ui, sans-serif; line-height: 1.6; }
+      body { max-width: 980px; margin: 0 auto; padding: 2rem 1.25rem 4rem; color: #1f2937; }
+      h1, h2, h3 { line-height: 1.2; color: #111827; }
+      h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+      .lead { font-size: 1.1rem; color: #4b5563; }
+      .card { border: 1px solid #dbe3ee; border-radius: 14px; padding: 1.25rem; margin: 1.25rem 0; background: #f8fafc; }
+      .formula { overflow-x: auto; padding: 1rem 0; }
+      table { border-collapse: collapse; width: 100%; margin: 1rem 0; background: white; }
+      th, td { border: 1px solid #cbd5e1; padding: .55rem .7rem; text-align: left; }
+      th { background: #e2e8f0; }
+      code { background: #e5e7eb; border-radius: 4px; padding: .1rem .3rem; }
+    </style>
+  </head>
+  <body>
+    <header class="card">
+      <p>Лабораторная работа 1</p>
+      <h1>Переходный процесс с обратной связью по мощности и системой регулирования</h1>
+      <p class="lead">Теоретическая часть. Интерактивная модель и графики будут добавлены отдельным разделом.</p>
+    </header>
+
+    <section>
+      <h2>Цель работы</h2>
+      <p>Исследовать динамику ядерного реактора при переводе мощности с одного уровня на другой с учётом обратной связи по мощности и автоматической системы регулирования.</p>
+      <ol>
+        <li>Реализовать численное интегрирование линеаризованной системы точечной кинетики с одной группой запаздывающих нейтронов.</li>
+        <li>Исследовать четыре комбинации обратных связей.</li>
+        <li>Оценить влияние коэффициентов реактивности, усиления и инерционности регулятора.</li>
+        <li>Построить зависимости отклонения мощности, реактивности и переменных регулятора.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>1. Уравнения динамики</h2>
+      <p>Рассматривается точечная модель кинетики реактора с одной эффективной группой запаздывающих нейтронов, дополненная уравнением системы регулирования и линейной обратной связью по мощности.</p>
+      <div class="formula" data-display="true">\begin{cases}
+        \dfrac{dn}{dt} = \dfrac{\rho_{cm} + \alpha_w n - \beta}{l}\, n + \lambda c,\\[8pt]
+        \dfrac{dc}{dt} = \dfrac{\beta}{l}\, n - \lambda c,\\[8pt]
+        \tau_p \dfrac{d^2 \rho_{cm}}{dt^2} + \dfrac{d\rho_{cm}}{dt} = -x_0 y.
+      \end{cases}</div>
+      <ul>
+        <li><code>n</code> — плотность нейтронов, пропорциональная мощности;</li>
+        <li><code>c</code> — концентрация предшественников запаздывающих нейтронов;</li>
+        <li><code>rho_cm</code> — реактивность, вносимая системой регулирования;</li>
+        <li><code>alpha_w</code> — коэффициент реактивности по мощности;</li>
+        <li><code>beta</code> — доля запаздывающих нейтронов;</li>
+        <li><code>l</code> — время жизни мгновенных нейтронов;</li>
+        <li><code>lambda</code> — постоянная распада предшественников;</li>
+        <li><code>tau_p</code> — постоянная времени регулятора.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Линеаризация</h2>
+      <p>Введём отклонения от стационарного состояния: <span class="formula-inline" data-display="false">\delta n = n - n_{уст}</span> и <span class="formula-inline" data-display="false">\delta c = c - c_{уст}</span>. После отбрасывания членов второго порядка малости:</p>
+      <div class="formula" data-display="true">\begin{cases}
+        \dfrac{d\,\delta n}{dt} = \dfrac{\rho_{cm} + (\alpha_w n_{уст} - \beta)}{l}\,\delta n + \lambda\,\delta c,\\[8pt]
+        \dfrac{d\,\delta c}{dt} = \dfrac{\beta}{l}\,\delta n - \lambda\,\delta c.
+      \end{cases}</div>
+    </section>
+
+    <section>
+      <h2>3. Относительные переменные</h2>
+      <p>Переходим к <span class="formula-inline" data-display="false">\delta w = \delta n / n_{уст}</span> и <span class="formula-inline" data-display="false">\widetilde{\delta c} = \delta c / c_{уст}</span>, где <span class="formula-inline" data-display="false">c_{уст} = \beta n_{уст}/(\lambda l)</span>:</p>
+      <div class="formula" data-display="true">\begin{cases}
+        \dfrac{d\,\delta w}{dt} = \dfrac{A\,\rho_{cm} + (B\,\alpha_w n_{уст} - \beta)\,\delta w}{l} + \dfrac{\beta}{l}\,\widetilde{\delta c},\\[8pt]
+        \dfrac{d\,\widetilde{\delta c}}{dt} = \lambda(\delta w - \widetilde{\delta c}),\\[8pt]
+        \dfrac{d\rho_{cm}}{dt} = Z,\\[8pt]
+        \dfrac{dZ}{dt} = -\dfrac{Z}{\tau_p} - \dfrac{x_0}{\tau_p}\,\delta w.
+      \end{cases}</div>
+      <table>
+        <thead><tr><th>Режим</th><th>A</th><th>B</th><th>Что работает</th></tr></thead>
+        <tbody>
+          <tr><td>Обе связи</td><td>1</td><td>1</td><td>Мощность и регулятор</td></tr>
+          <tr><td>Только мощность</td><td>0</td><td>1</td><td>Обратная связь по мощности</td></tr>
+          <tr><td>Только регулятор</td><td>1</td><td>0</td><td>Система регулирования</td></tr>
+          <tr><td>Без связей</td><td>0</td><td>0</td><td>«Голый» реактор</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. Начальные условия и стационарное состояние</h2>
+      <p>При <span class="formula-inline" data-display="false">t = 0</span> реактор работает на уровне <span class="formula-inline" data-display="false">n_0</span>. Введём <span class="formula-inline" data-display="false">\alpha = n_0/n_{уст}</span>:</p>
+      <div class="formula" data-display="true">\delta w(0) = 1 - \alpha,\qquad \widetilde{\delta c}(0) = 1 - \alpha,\qquad \rho_{cm}(0)=0,\qquad Z(0)=0.</div>
+      <p>При <span class="formula-inline" data-display="false">n_{уст} &lt; 1</span> мощность снижается, при <span class="formula-inline" data-display="false">n_{уст} &gt; 1</span> — растёт. В стационарном состоянии:</p>
+      <div class="formula" data-display="true">\delta w_{ст}=0,\qquad \widetilde{\delta c}_{ст}=0,\qquad Z_{ст}=0,\qquad \rho_{cm,ст}=0.</div>
+    </section>
+
+    <section>
+      <h2>5. Численные параметры</h2>
+      <table>
+        <thead><tr><th>Параметр</th><th>Обозначение</th><th>Значение</th><th>Единица</th></tr></thead>
+        <tbody>
+          <tr><td>Время жизни мгновенных нейтронов</td><td><span class="formula-inline" data-display="false">l</span></td><td>10⁻³</td><td>с</td></tr>
+          <tr><td>Доля запаздывающих нейтронов</td><td><span class="formula-inline" data-display="false">\beta</span></td><td>0.0065</td><td>—</td></tr>
+          <tr><td>Постоянная распада</td><td><span class="formula-inline" data-display="false">\lambda</span></td><td>0.0765</td><td>с⁻¹</td></tr>
+          <tr><td>Коэффициент реактивности</td><td><span class="formula-inline" data-display="false">\alpha_{w0}</span></td><td>−1.7·10⁻²</td><td>—</td></tr>
+          <tr><td>Постоянная времени регулятора</td><td><span class="formula-inline" data-display="false">\tau_p</span></td><td>0.075</td><td>с</td></tr>
+          <tr><td>Коэффициент усиления</td><td><span class="formula-inline" data-display="false">x_0</span></td><td>1</td><td>—</td></tr>
+          <tr><td>Целевая мощность</td><td><span class="formula-inline" data-display="false">n_{уст}</span></td><td>0.8</td><td>—</td></tr>
+          <tr><td>Шаг интегрирования</td><td><span class="formula-inline" data-display="false">h</span></td><td>10⁻⁴</td><td>с</td></tr>
+          <tr><td>Интервал наблюдения</td><td><span class="formula-inline" data-display="false">t_{end}</span></td><td>5</td><td>с</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. Метод решения</h2>
+      <p>Вектор состояния имеет вид:</p>
+      <div class="formula" data-display="true">\mathbf y = (\delta w,\ \widetilde{\delta c},\ \rho_{cm},\ Z)^T.</div>
+      <p>Интегрирование выполняется классическим методом Рунге–Кутты 4-го порядка:</p>
+      <div class="formula" data-display="true">\mathbf y_{n+1} = \mathbf y_n + \dfrac{h}{6}(\mathbf k_1 + 2\mathbf k_2 + 2\mathbf k_3 + \mathbf k_4).</div>
+      <p>Для параметров из работы быстрая составляющая имеет оценку <span class="formula-inline" data-display="false">\lambda_{max} \approx -20.1\,\text{с}^{-1}</span>. Шаг <span class="formula-inline" data-display="false">h=10^{-4}\,\text{с}</span> выбран существенно меньше времени жизни мгновенных нейтронов.</p>
+    </section>
+
+    <footer class="card">
+      <strong>Следующий раздел:</strong> интерактивная модель на TypeScript с графиками <span class="formula-inline" data-display="false">\delta w(t)</span>, <span class="formula-inline" data-display="false">\rho_{cm}(t)</span>, <span class="formula-inline" data-display="false">Z(t)</span> и <span class="formula-inline" data-display="false">\delta c(t)</span>.
+    </footer>
+
+    <script src="./katex.min.js"></script>
+    <script>
+      for (const element of document.querySelectorAll("[data-display]")) {
+        katex.render(element.textContent, element, {
+          displayMode: element.dataset.display === "true",
+          throwOnError: false,
+        });
+      }
+    </script>
+  </body>
+</html>

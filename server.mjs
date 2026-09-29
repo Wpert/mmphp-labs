@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -12,8 +12,9 @@ const contentTypes = {
 };
 
 const server = createServer(async (request, response) => {
-  const pathname = request.url === "/" ? "/index.html" : request.url;
-  const filePath = normalize(join(root, pathname));
+  const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
+  const requestedPath = pathname === "/" ? "/index.html" : pathname;
+  let filePath = normalize(join(root, requestedPath));
 
   if (!filePath.startsWith(root)) {
     response.writeHead(403);
@@ -22,6 +23,10 @@ const server = createServer(async (request, response) => {
   }
 
   try {
+    if ((await stat(filePath)).isDirectory()) {
+      filePath = join(filePath, "index.html");
+    }
+
     const content = await readFile(filePath);
     response.writeHead(200, {
       "Content-Type": contentTypes[extname(filePath)] ?? "application/octet-stream",

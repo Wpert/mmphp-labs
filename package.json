@@ -5,9 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:lab01": "node scripts/build-lab01.mjs",
+    "build:all": "npm run build && npm run build:lab01",
     "dev": "npm run build && node server.mjs"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "katex": "^0.16.22"
   }
 }
