@@ -1,3 +1,4 @@
 .kilo/
 build/
 dist/
+node_modules/
