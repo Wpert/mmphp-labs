@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Лабораторная 2: обратная связь по мощности и регулирование</title>
+  <link rel="stylesheet" href="./katex.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="card">
+    <p>Лабораторная работа 2</p>
+    <h1>Реактор с обратной связью по мощности и системой регулирования</h1>
+    <p class="lead">Линеаризованная точечная кинетика с одной группой запаздывающих нейтронов и инерционным регулятором второго порядка.</p>
+  </header>
+
+  <section class="card">
+    <h2>Цель и постановка задачи</h2>
+    <p>Исследовать перевод реактора с номинальной мощности на другой уровень при обратной связи по мощности и автоматической системе регулирования. Оценить, как ключи обратных связей и параметры <span class="math-label">\(\alpha_w\)</span>, <span class="math-label">\(x_0\)</span>, <span class="math-label">\(\tau_p\)</span>, <span class="math-label">\(\beta\)</span> влияют на устойчивость и качество переходного процесса.</p>
+    <ol>
+      <li>Решить линеаризованную систему методом Рунге–Кутты 4-го порядка.</li>
+      <li>Сравнить четыре режима: обе связи, только мощность, только регулятор, без связей.</li>
+      <li>Проследить влияние <span class="math-label">\(x_0\)</span>, <span class="math-label">\(\alpha_w\)</span>, <span class="math-label">\(\tau_p\)</span> и <span class="math-label">\(\beta\)</span>.</li>
+      <li>Оценить перерегулирование, время регулирования и период колебаний.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>1. Уравнения точечной кинетики</h2>
+    <p>Реактор работает на номинальной мощности <span class="math-label">\(n_0\)</span> и переводится на уставку <span class="math-label">\(n_{\mathrm{уст}}\)</span>. Переход описывается точечной кинетикой с одной группой запаздывающих нейтронов и обратной связью по мощности:</p>
+    <div class="formula math-display">\left\{\begin{aligned}\frac{dn}{dt}&=\frac{\rho_{\mathrm{ст}}+\alpha_w(n-n_{\mathrm{уст}})-\beta}{l}\,n+\lambda c,\\\frac{dc}{dt}&=\frac{\beta}{l}n-\lambda c.\end{aligned}\right.</div>
+    <p><span class="math-label">\(n\)</span> — плотность нейтронов, пропорциональная мощности; <span class="math-label">\(c\)</span> — концентрация предшественников; <span class="math-label">\(\rho_{\mathrm{ст}}\)</span> — реактивность, вносимая регулятором; <span class="math-label">\(\alpha_w\)</span> — коэффициент реактивности по мощности; <span class="math-label">\(\beta\)</span> — доля запаздывающих нейтронов; <span class="math-label">\(l\)</span> — время жизни мгновенных нейтронов; <span class="math-label">\(\lambda\)</span> — постоянная распада предшественников.</p>
+    <p>Начальные условия: <span class="formula-inline">n(0)=n_0</span>, <span class="formula-inline">c(0)=c_0</span>.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Система регулирования</h2>
+    <p>Привод стержней имеет инерционность второго порядка. В справке коэффициент усиления обозначен <span class="math-label">\(k_0\)</span>, дальше он записан как <span class="math-label">\(x_0\)</span>:</p>
+    <div class="formula math-display">\tau_p\frac{d^2\rho_{\mathrm{ст}}}{dt^2}+\frac{d\rho_{\mathrm{ст}}}{dt}=-x_0 y,\qquad y=\frac{n-n_{\mathrm{уст}}}{n_{\mathrm{уст}}}.</div>
+    <p>Если рассогласование не выходит за порог, <span class="formula-inline">|y|\le y_0</span>, регулятор не работает и <span class="formula-inline">\rho_{\mathrm{ст}}=0</span>. Уравнение мощности нелинейно, поэтому такой закон может не обеспечить переход. В линейной модели порогом пренебрегают и считают регулятор непрерывным.</p>
+  </section>
+
+  <section class="card">
+    <h2>3. Линеаризация</h2>
+    <p>Отклонения от установившегося состояния на уставке:</p>
+    <div class="formula math-display">\delta n=n-n_{\mathrm{уст}},\qquad \delta c=c-c_{\mathrm{уст}}.</div>
+    <p>В стационаре при <span class="formula-inline">n=n_{\mathrm{уст}}</span> и нулевой реактивности регулятора</p>
+    <div class="formula math-display">c_{\mathrm{уст}}=\frac{\beta}{\lambda l}n_{\mathrm{уст}}.</div>
+    <p>Произведения <span class="formula-inline">\rho_{\mathrm{ст}}\delta n</span> и <span class="formula-inline">\alpha_w(\delta n)^2</span> отбрасываются как малые второго порядка. После этого кинетика становится линейной по отклонениям.</p>
+  </section>
+
+  <section class="card">
+    <h2>4. Относительные переменные</h2>
+    <div class="formula math-display">\delta w=\frac{\delta n}{n_{\mathrm{уст}}},\qquad \widetilde{\delta c}=\frac{\delta c}{c_{\mathrm{уст}}}.</div>
+    <p>С учётом стационарной связи <span class="formula-inline">\beta n_{\mathrm{уст}}/(l c_{\mathrm{уст}})=\lambda</span> система принимает вид</p>
+    <div class="formula math-display">\left\{\begin{aligned}\frac{d\,\delta w}{dt}&=\frac{\rho_{\mathrm{ст}}+(\alpha_w n_{\mathrm{уст}}-\beta)\delta w}{l}+\frac{\beta}{l}\widetilde{\delta c},\\\frac{d\,\widetilde{\delta c}}{dt}&=\lambda(\delta w-\widetilde{\delta c}),\\\tau_p\frac{d^2\rho_{\mathrm{ст}}}{dt^2}+\frac{d\rho_{\mathrm{ст}}}{dt}&=-x_0\delta w.\end{aligned}\right.</div>
+    <p>На номинале эффект реактивности равен <span class="formula-inline">\alpha_w n_0=-1{,}7\cdot 10^{-2}</span>. При <span class="formula-inline">n_0=1</span> это задаёт эталонное <span class="formula-inline">\alpha_w</span>, а в уравнении стоит произведение <span class="formula-inline">\alpha_w n_{\mathrm{уст}}=-1{,}7\cdot 10^{-2}\,\alpha</span>, где <span class="formula-inline">\alpha=n_{\mathrm{уст}}/n_0</span>.</p>
+  </section>
+
+  <section class="card">
+    <h2>5. Итоговая система модели</h2>
+    <p>Для метода Рунге–Кутты уравнение регулятора сводится к двум уравнениям первого порядка: <span class="formula-inline">d\rho_{\mathrm{ст}}/dt=Z</span>. Ключ <b>A</b> включает регулятор, ключ <b>B</b> — обратную связь по мощности. Интегрируется система</p>
+    <div class="formula math-display">\left\{\begin{aligned}\frac{d\,\delta w}{dt}&=\frac{A\rho_{\mathrm{ст}}+(B\alpha_w n_{\mathrm{уст}}-\beta)\delta w}{l}+\frac{\beta}{l}\widetilde{\delta c},\\\frac{d\,\widetilde{\delta c}}{dt}&=\lambda(\delta w-\widetilde{\delta c}),\\\frac{d\rho_{\mathrm{ст}}}{dt}&=Z,\\\frac{dZ}{dt}&=-\frac{Z}{\tau_p}-\frac{x_0}{\tau_p}\delta w.\end{aligned}\right.</div>
+    <table><thead><tr><th><span class="math-label">\(A\)</span></th><th><span class="math-label">\(B\)</span></th><th>Что работает</th></tr></thead><tbody>
+      <tr><td>1</td><td>1</td><td>Обе связи</td></tr>
+      <tr><td>0</td><td>1</td><td>Только обратная связь по мощности</td></tr>
+      <tr><td>1</td><td>0</td><td>Только система регулирования</td></tr>
+      <tr><td>0</td><td>0</td><td>Без обратных связей, мощность остаётся на начальном уровне</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="card">
+    <h2>6. Начальные условия и параметры</h2>
+    <p>В начале процесса <span class="formula-inline">n=n_0</span>. Относительное отклонение и параметр перевода:</p>
+    <div class="formula math-display">\alpha=\frac{n_{\mathrm{уст}}}{n_0},\qquad \delta w(0)=\widetilde{\delta c}(0)=\frac{1-\alpha}{\alpha},\qquad \rho_{\mathrm{ст}}(0)=Z(0)=0.</div>
+    <p>При <span class="formula-inline">n_0=1</span> и уставке <span class="formula-inline">n_{\mathrm{уст}}=0{,}8</span> получается <span class="formula-inline">\alpha=0{,}8</span> и <span class="formula-inline">\delta w(0)=0{,}25</span>: мощность выше уставки, переход — снижение. Если <span class="formula-inline">\alpha&lt;1</span>, мощность снижается до уставки; если <span class="formula-inline">\alpha&gt;1</span>, поднимается.</p>
+    <table><thead><tr><th>Параметр</th><th>Обозначение</th><th>Эталон</th></tr></thead><tbody>
+      <tr><td>Время жизни мгновенных нейтронов</td><td><span class="math-label">\(l\)</span></td><td><span class="math-label">\(10^{-3}\,\mathrm{s}\)</span></td></tr>
+      <tr><td>Доля запаздывающих нейтронов</td><td><span class="math-label">\(\beta\)</span></td><td><span class="math-label">\(0.0065\)</span></td></tr>
+      <tr><td>Постоянная распада</td><td><span class="math-label">\(\lambda\)</span></td><td><span class="math-label">\(0.0765\,\mathrm{s}^{-1}\)</span></td></tr>
+      <tr><td>Коэффициент по мощности</td><td><span class="math-label">\(\alpha_w\)</span></td><td><span class="math-label">\(-1.7\cdot 10^{-2}\)</span></td></tr>
+      <tr><td>Постоянная времени регулятора</td><td><span class="math-label">\(\tau_p\)</span></td><td><span class="math-label">\(0.075\,\mathrm{s}\)</span></td></tr>
+      <tr><td>Коэффициент усиления</td><td><span class="math-label">\(x_0\)</span></td><td><span class="math-label">\(0.2\)</span></td></tr>
+      <tr><td>Уставка</td><td><span class="math-label">\(n_{\mathrm{уст}}\)</span></td><td><span class="math-label">\(0.8\)</span></td></tr>
+      <tr><td>Шаг интегрирования</td><td><span class="math-label">\(h\)</span></td><td><span class="math-label">\(10^{-4}\,\mathrm{s}\)</span></td></tr>
+    </tbody></table>
+    <p class="note">В подписи расчётного листа указано <span class="math-label">\(\lambda=0.0768\,\mathrm{s}^{-1}\)</span>, а в ячейках интегрирования стоит 0.0765. Эталон страницы совпадает с ячейками и с зачтённым решением.</p>
+  </section>
+
+  <section class="card">
+    <h2>7. Численный метод</h2>
+    <p>Вектор состояния <span class="formula-inline">y=(\delta w,\widetilde{\delta c},\rho_{\mathrm{ст}},Z)^T</span> интегрируется классическим методом Рунге–Кутты четвёртого порядка:</p>
+    <div class="formula math-display">\begin{aligned}k_1&=f(y_n),&k_2&=f(y_n+hk_1/2),\\k_3&=f(y_n+hk_2/2),&k_4&=f(y_n+hk_3),\\y_{n+1}&=y_n+\frac{h}{6}(k_1+2k_2+2k_3+k_4).\end{aligned}</div>
+    <p>Самый быстрый масштаб системы — время жизни нейтронов <span class="formula-inline">l\sim 10^{-3}\,\mathrm{s}</span>. Для устойчивости шага берётся <span class="formula-inline">h=10^{-4}\,\mathrm{s}</span>. Реактивность регулятора входит в кинетику в виде <span class="formula-inline">A\rho_{\mathrm{ст}}/l</span>: делится весь числитель уравнения мощности, как в линеаризованной системе.</p>
+  </section>
+
+  <section class="card">
+    <h2>8. Устойчивость и качество регулирования</h2>
+    <p>Процесс устойчив, если <span class="formula-inline">\delta w(t)\to 0</span> при <span class="formula-inline">t\to\infty</span>. Инерция <span class="math-label">\(\tau_p\)</span> даёт фазовое запаздывание, большой <span class="math-label">\(x_0\)</span> увеличивает петлевое усиление, а слабая отрицательная <span class="math-label">\(\alpha_w\)</span> хуже гасит колебания. Рост <span class="math-label">\(\beta\)</span> усиливает связь с предшественниками и стабилизирует реактор, но не снимает неустойчивость, внесённую регулятором.</p>
+    <p>Если контур регулятора раскачивается, характерная частота близка к</p>
+    <div class="formula math-display">\omega_{\mathrm{osc}}\approx\sqrt{\frac{x_0}{\tau_p}},\qquad T=\frac{2\pi}{\omega_{\mathrm{osc}}}.</div>
+    <p>При <span class="formula-inline">x_0=0.55</span> и <span class="formula-inline">\tau_p=0.075</span> оценка даёт <span class="formula-inline">T\approx 2.32</span> с. Это период контура регулятора. Измеренный по <span class="math-label">\(\delta w\)</span> период часто короче: в переходном процессе видна и более быстрая нейтронная составляющая. Для эталонных <span class="math-label">\(\alpha_w\)</span> и <span class="math-label">\(\tau_p\)</span> обе связи удерживают процесс примерно до <span class="formula-inline">x_0\approx 0.6</span>. При <span class="formula-inline">x_0=1</span> отклонение уже нарастает: реактивность регулятора делится на малое <span class="math-label">\(l\)</span>, поэтому коэффициент петли велик.</p>
+    <p>Перерегулирование — выход отклонения за ноль, отнесённый к начальному: <span class="formula-inline">\sigma=|\delta w_{\mathrm{пер}}|/|\delta w(0)|</span>. Время регулирования <span class="math-label">\(t_{\mathrm{рег}}\)</span> — момент, после которого <span class="formula-inline">|\delta w|&lt;0{,}05\,|\delta w(0)|</span> до конца интервала.</p>
+  </section>
+
+  <section class="card">
+    <h2>9. Порядок выполнения работы</h2>
+    <ol>
+      <li>Сравнить четыре режима ключей при эталонных параметрах и наложить кривые <span class="math-label">\(\delta w(t)\)</span>.</li>
+      <li>При <b>A=1</b>, <b>B=1</b> пройти <span class="formula-inline">x_0=0.05;\ 0.2;\ 0.4;\ 0.55;\ 0.7;\ 1</span> и найти границу устойчивости.</li>
+      <li>При <span class="formula-inline">x_0=0.5</span> пройти <span class="formula-inline">\alpha_w=-0.005;\ -0.010;\ -0.017;\ -0.030;\ -0.050</span>.</li>
+      <li>При <span class="formula-inline">x_0=0.55</span> и <span class="formula-inline">\alpha_w=-0.017</span> пройти <span class="formula-inline">\tau_p=0.01;\ 0.05;\ 0.075;\ 0.2;\ 0.5</span>.</li>
+      <li>При <span class="formula-inline">x_0=0.6</span> пройти <span class="formula-inline">\beta=0.003;\ 0.005;\ 0.0065;\ 0.01;\ 0.02</span>.</li>
+      <li>На устойчивом режиме сравнить <span class="formula-inline">h=10^{-4}</span>, <span class="formula-inline">5\cdot 10^{-4}</span> и <span class="formula-inline">10^{-3}</span>.</li>
+    </ol>
+    <p>Для отчёта фиксируются перерегулирование, время регулирования, период колебаний и граница устойчивости по каждому параметру.</p>
+  </section>
+
+  <section class="card">
+    <h2>10. Вопросы для самопроверки</h2>
+    <ol>
+      <li>Почему уравнение мощности нелинейно и какие члены отбрасываются при линеаризации?</li>
+      <li>Что означает порог <span class="math-label">\(y_0\)</span> и почему в линейной модели им пренебрегают?</li>
+      <li>Какая обратная связь сильнее влияет на устойчивость: по мощности или регулятор?</li>
+      <li>Как меняется качество процесса при росте <span class="math-label">\(x_0\)</span> и <span class="math-label">\(\tau_p\)</span>?</li>
+      <li>При каких <span class="math-label">\(\alpha_w\)</span> обратная связь по мощности стабилизирует систему?</li>
+      <li>Как <span class="math-label">\(\beta\)</span> влияет на устойчивость?</li>
+      <li>Подтверждается ли оценка <span class="formula-inline">\omega_{\mathrm{osc}}\approx\sqrt{x_0/\tau_p}</span>?</li>
+      <li>Какой шаг <span class="math-label">\(h\)</span> достаточен для численного решения?</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Параметры расчёта</h2>
+    <div class="controls">
+      <label class="control"><span><span class="math-label">\(\alpha_w\)</span></span><input id="alphaWRange" type="range" min="-0.1" max="0.01" step="0.0005" value="-0.017"><input id="alphaW" type="number" min="-0.1" max="0.01" step="0.0001" value="-0.017"></label>
+      <label class="control"><span><span class="math-label">\(x_0\)</span>, логарифмическая шкала</span><input id="x0Range" type="range" min="-2" max="3" step="0.01" value="-0.69897"><input id="x0" type="number" min="0.01" max="1000" step="any" value="0.2"></label>
+      <label class="control"><span><span class="math-label">\(\tau_p\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tauPRange" type="range" min="-3" max="0" step="0.01" value="-1.1249387366083"><input id="tauP" type="number" min="0.001" max="1" step="any" value="0.075"></label>
+      <label class="control"><span><span class="math-label">\(n_{\mathrm{уст}}\)</span></span><input id="nUstRange" type="range" min="0.2" max="1.5" step="0.01" value="0.8"><input id="nUst" type="number" min="0.2" max="1.5" step="0.01" value="0.8"></label>
+      <label class="control"><span><span class="math-label">\(l\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="lRange" type="range" min="-5" max="-2" step="0.01" value="-3"><input id="l" type="number" min="0.00001" max="0.01" step="any" value="0.001"></label>
+      <label class="control"><span><span class="math-label">\(\beta\)</span></span><input id="betaRange" type="range" min="0.001" max="0.02" step="0.0001" value="0.0065"><input id="beta" type="number" min="0.001" max="0.02" step="0.0001" value="0.0065"></label>
+      <label class="control"><span><span class="math-label">\(\lambda\)</span>, <span class="math-label">\(\mathrm{s}^{-1}\)</span></span><input id="lambdaRange" type="range" min="0.01" max="0.2" step="0.0005" value="0.0765"><input id="lambda" type="number" min="0.01" max="0.2" step="0.0005" value="0.0765"></label>
+      <label class="control"><span>Шаг <span class="math-label">\(h\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="hRange" type="range" min="-5" max="-2" step="0.01" value="-4"><input id="h" type="number" min="0.00001" max="0.01" step="any" value="0.0001"></label>
+      <label class="control"><span>Интервал, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tEndRange" type="range" min="0.5" max="30" step="0.5" value="8"><input id="tEnd" type="number" min="0.5" max="30" step="0.5" value="8"></label>
+      <label class="control"><span>Ключ <span class="math-label">\(A\)</span>, регулятор</span><input id="keyA" type="checkbox" checked></label>
+      <label class="control"><span>Ключ <span class="math-label">\(B\)</span>, мощность</span><input id="keyB" type="checkbox" checked></label>
+    </div>
+    <div class="actions">
+      <button data-preset="stable" type="button">Стабильный</button>
+      <button data-preset="oscillatory" type="button">Колебательный</button>
+      <button data-preset="unstable" type="button">Неустойчивый</button>
+      <button data-preset="power" type="button">Только мощность</button>
+      <button data-preset="regulator" type="button">Только регулятор</button>
+      <button data-preset="open" type="button">Без связей</button>
+      <button id="save" class="secondary" type="button">Сохранить вариант</button>
+      <button id="clear" class="secondary" type="button">Очистить варианты</button>
+      <button id="export" class="secondary" type="button">Экспорт CSV</button>
+    </div>
+    <p id="status" class="status">Расчёт готов</p>
+    <p id="legend" class="legend"></p>
+  </section>
+
+  <section class="card plots">
+    <div><div class="plot-title">Отклонение мощности <span class="math-label">\(\delta w\)</span></div><canvas id="power" class="plot"></canvas></div>
+    <div><div class="plot-title">Реактивность регулятора <span class="math-label">\(\rho_{\mathrm{ст}}\)</span></div><canvas id="rho" class="plot"></canvas></div>
+    <div><div class="plot-title">Скорость регулятора <span class="math-label">\(Z\)</span></div><canvas id="rate" class="plot"></canvas></div>
+    <div><div class="plot-title">Предшественники <span class="math-label">\(\widetilde{\delta c}\)</span></div><canvas id="precursors" class="plot"></canvas></div>
+  </section>
+
+  <section class="card">
+    <h2>Показатели переходного процесса</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span class="math-label">\(A\)</span></th>
+          <th><span class="math-label">\(B\)</span></th>
+          <th><span class="math-label">\(\delta w(0)\)</span></th>
+          <th><span class="math-label">\(\delta w_{\mathrm{кон}}\)</span></th>
+          <th><span class="math-label">\(n/n_{\mathrm{уст}}\)</span></th>
+          <th><span class="math-label">\(\sigma\)</span></th>
+          <th><span class="math-label">\(t_{\mathrm{рег}}\)</span>, с</th>
+          <th><span class="math-label">\(T\)</span>, с</th>
+          <th>Режим</th>
+        </tr></thead>
+        <tbody id="metrics"></tbody>
+      </table>
+    </div>
+    <p id="periodNote" class="note"></p>
+  </section>
+
+  <script src="./katex.min.js"></script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

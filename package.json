@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "build:lab01": "node scripts/build-lab01.mjs",
-    "build:all": "npm run build && npm run build:lab01",
+    "build:lab02": "node scripts/build-lab02.mjs",
+    "build:all": "npm run build && npm run build:lab01 && npm run build:lab02",
     "dev": "npm run build:all && node server.mjs"
   },
   "devDependencies": {
