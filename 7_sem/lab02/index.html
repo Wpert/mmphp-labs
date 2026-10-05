@@ -132,18 +132,38 @@
 
   <section class="card">
     <h2>Параметры расчёта</h2>
-    <div class="controls">
-      <label class="control"><span><span class="math-label">\(\alpha_w\)</span></span><input id="alphaWRange" type="range" min="-0.1" max="0.01" step="0.0005" value="-0.017"><input id="alphaW" type="number" min="-0.1" max="0.01" step="0.0001" value="-0.017"></label>
-      <label class="control"><span><span class="math-label">\(x_0\)</span>, логарифмическая шкала</span><input id="x0Range" type="range" min="-2" max="3" step="0.01" value="-0.69897"><input id="x0" type="number" min="0.01" max="1000" step="any" value="0.2"></label>
-      <label class="control"><span><span class="math-label">\(\tau_p\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tauPRange" type="range" min="-3" max="0" step="0.01" value="-1.1249387366083"><input id="tauP" type="number" min="0.001" max="1" step="any" value="0.075"></label>
-      <label class="control"><span><span class="math-label">\(n_{\mathrm{уст}}\)</span></span><input id="nUstRange" type="range" min="0.2" max="1.5" step="0.01" value="0.8"><input id="nUst" type="number" min="0.2" max="1.5" step="0.01" value="0.8"></label>
-      <label class="control"><span><span class="math-label">\(l\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="lRange" type="range" min="-5" max="-2" step="0.01" value="-3"><input id="l" type="number" min="0.00001" max="0.01" step="any" value="0.001"></label>
-      <label class="control"><span><span class="math-label">\(\beta\)</span></span><input id="betaRange" type="range" min="0.001" max="0.02" step="0.0001" value="0.0065"><input id="beta" type="number" min="0.001" max="0.02" step="0.0001" value="0.0065"></label>
-      <label class="control"><span><span class="math-label">\(\lambda\)</span>, <span class="math-label">\(\mathrm{s}^{-1}\)</span></span><input id="lambdaRange" type="range" min="0.01" max="0.2" step="0.0005" value="0.0765"><input id="lambda" type="number" min="0.01" max="0.2" step="0.0005" value="0.0765"></label>
-      <label class="control"><span>Шаг <span class="math-label">\(h\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="hRange" type="range" min="-5" max="-2" step="0.01" value="-4"><input id="h" type="number" min="0.00001" max="0.01" step="any" value="0.0001"></label>
-      <label class="control"><span>Интервал, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tEndRange" type="range" min="0.5" max="30" step="0.5" value="8"><input id="tEnd" type="number" min="0.5" max="30" step="0.5" value="8"></label>
-      <label class="control"><span>Ключ <span class="math-label">\(A\)</span>, регулятор</span><input id="keyA" type="checkbox" checked></label>
-      <label class="control"><span>Ключ <span class="math-label">\(B\)</span>, мощность</span><input id="keyB" type="checkbox" checked></label>
+    <p>Слайдеры ниже меняют коэффициенты этой системы. Ключ <span class="math-label">\(A\)</span> умножает реактивность регулятора, ключ <span class="math-label">\(B\)</span> — обратную связь по мощности.</p>
+    <div class="formula math-display">\left\{\begin{aligned}\frac{d\,\delta w}{dt}&=\frac{A\rho_{\mathrm{ст}}+(B\alpha_w n_{\mathrm{уст}}-\beta)\delta w}{l}+\frac{\beta}{l}\widetilde{\delta c},\\\frac{d\,\widetilde{\delta c}}{dt}&=\lambda(\delta w-\widetilde{\delta c}),\\\frac{d\rho_{\mathrm{ст}}}{dt}&=Z,\\\frac{dZ}{dt}&=-\frac{Z}{\tau_p}-\frac{x_0}{\tau_p}\delta w,\\\delta w(0)&=\widetilde{\delta c}(0)=\frac{1-n_{\mathrm{уст}}}{n_{\mathrm{уст}}},\quad \rho_{\mathrm{ст}}(0)=Z(0)=0.\end{aligned}\right.</div>
+    <div class="control-group">
+      <h3>Уравнение мощности</h3>
+      <div class="controls">
+        <label class="control"><span><span class="math-label">\(\alpha_w\)</span></span><input id="alphaWRange" type="range" min="-0.1" max="0.01" step="0.0005" value="-0.017"><input id="alphaW" type="number" min="-0.1" max="0.01" step="0.0001" value="-0.017"></label>
+        <label class="control"><span><span class="math-label">\(n_{\mathrm{уст}}\)</span></span><input id="nUstRange" type="range" min="0.2" max="1.5" step="0.01" value="0.8"><input id="nUst" type="number" min="0.2" max="1.5" step="0.01" value="0.8"></label>
+        <label class="control"><span><span class="math-label">\(l\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="lRange" type="range" min="-5" max="-2" step="0.01" value="-3"><input id="l" type="number" min="0.00001" max="0.01" step="any" value="0.001"></label>
+        <label class="control"><span><span class="math-label">\(\beta\)</span></span><input id="betaRange" type="range" min="0.001" max="0.02" step="0.0001" value="0.0065"><input id="beta" type="number" min="0.001" max="0.02" step="0.0001" value="0.0065"></label>
+        <label class="control"><span>Ключ <span class="math-label">\(A\)</span>, регулятор</span><input id="keyA" type="checkbox" checked></label>
+        <label class="control"><span>Ключ <span class="math-label">\(B\)</span>, мощность</span><input id="keyB" type="checkbox" checked></label>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Уравнение предшественников</h3>
+      <div class="controls">
+        <label class="control"><span><span class="math-label">\(\lambda\)</span>, <span class="math-label">\(\mathrm{s}^{-1}\)</span></span><input id="lambdaRange" type="range" min="0.01" max="0.2" step="0.0005" value="0.0765"><input id="lambda" type="number" min="0.01" max="0.2" step="0.0005" value="0.0765"></label>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Уравнение регулятора</h3>
+      <div class="controls">
+        <label class="control"><span><span class="math-label">\(x_0\)</span>, логарифмическая шкала</span><input id="x0Range" type="range" min="-2" max="3" step="0.01" value="-0.69897"><input id="x0" type="number" min="0.01" max="1000" step="any" value="0.2"></label>
+        <label class="control"><span><span class="math-label">\(\tau_p\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tauPRange" type="range" min="-3" max="0" step="0.01" value="-1.1249387366083"><input id="tauP" type="number" min="0.001" max="1" step="any" value="0.075"></label>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Шаг интегрирования</h3>
+      <div class="controls">
+        <label class="control"><span>Шаг <span class="math-label">\(h\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="hRange" type="range" min="-5" max="-2" step="0.01" value="-4"><input id="h" type="number" min="0.00001" max="0.01" step="any" value="0.0001"></label>
+        <label class="control"><span>Интервал, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tEndRange" type="range" min="0.5" max="30" step="0.5" value="8"><input id="tEnd" type="number" min="0.5" max="30" step="0.5" value="8"></label>
+      </div>
     </div>
     <div class="actions">
       <button data-preset="stable" type="button">Стабильный</button>

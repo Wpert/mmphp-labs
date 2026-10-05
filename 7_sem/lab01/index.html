@@ -110,12 +110,27 @@
 
   <section class="card">
     <h2>Параметры расчёта</h2>
-    <div class="controls">
-      <label class="control"><span><span class="math-label">\(r\)</span>, доли <span class="math-label">\(\beta\)</span></span><input id="rRange" type="range" min="-0.9" max="0.9" step="0.01" value="0.3"><input id="r" type="number" min="-0.9" max="0.9" step="0.01" value="0.3"></label>
-      <label class="control"><span><span class="math-label">\(S\)</span>, доля <span class="math-label">\(\alpha_{T0}\)</span></span><input id="sRange" type="range" min="0" max="5" step="0.1" value="1"><input id="s" type="number" min="0" max="5" step="0.1" value="1"></label>
-      <label class="control"><span><span class="math-label">\(\lambda\)</span>, <span class="math-label">\(\mathrm{s}^{-1}\)</span></span><input id="lambdaRange" type="range" min="0.001" max="1" step="0.001" value="0.07"><input id="lambda" type="number" min="0.001" max="1" step="0.001" value="0.07"></label>
-      <label class="control"><span>Шаг <span class="math-label">\(h\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="hRange" type="range" min="0.001" max="0.2" step="0.001" value="0.1"><input id="h" type="number" min="0.001" max="0.2" step="0.001" value="0.1"></label>
-      <label class="control"><span>Интервал, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tEndRange" type="range" min="1" max="60" step="1" value="10"><input id="tEnd" type="number" min="1" max="60" step="1" value="10"></label>
+    <p>Слайдеры ниже меняют коэффициенты этой системы. Числа 0.147 и 0.236 в уравнении температуры зафиксированы.</p>
+    <div class="formula math-display">\left\{\begin{aligned}\frac{dN}{dt}&=\frac{\beta(r-1)-S\cdot0.02(T-1)}{l}N+\frac{\beta}{l}\bar C,\\\frac{d\bar C}{dt}&=\lambda(N-\bar C),\\\frac{dT}{dt}&=0.147N-0.236(T-0.375),\\N(0)&=\bar C(0)=T(0)=1.\end{aligned}\right.</div>
+    <div class="control-group">
+      <h3>Уравнение мощности</h3>
+      <div class="controls">
+        <label class="control"><span><span class="math-label">\(r\)</span>, доли <span class="math-label">\(\beta\)</span></span><input id="rRange" type="range" min="-0.9" max="0.9" step="0.01" value="0.3"><input id="r" type="number" min="-0.9" max="0.9" step="0.01" value="0.3"></label>
+        <label class="control"><span><span class="math-label">\(S\)</span>, доля <span class="math-label">\(\alpha_{T0}\)</span></span><input id="sRange" type="range" min="0" max="5" step="0.1" value="1"><input id="s" type="number" min="0" max="5" step="0.1" value="1"></label>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Уравнение предшественников</h3>
+      <div class="controls">
+        <label class="control"><span><span class="math-label">\(\lambda\)</span>, <span class="math-label">\(\mathrm{s}^{-1}\)</span></span><input id="lambdaRange" type="range" min="0.001" max="1" step="0.001" value="0.07"><input id="lambda" type="number" min="0.001" max="1" step="0.001" value="0.07"></label>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Шаг интегрирования</h3>
+      <div class="controls">
+        <label class="control"><span>Шаг <span class="math-label">\(h\)</span>, <span class="math-label">\(\mathrm{s}\)</span></span><input id="hRange" type="range" min="0.001" max="0.2" step="0.001" value="0.1"><input id="h" type="number" min="0.001" max="0.2" step="0.001" value="0.1"></label>
+        <label class="control"><span>Интервал, <span class="math-label">\(\mathrm{s}\)</span></span><input id="tEndRange" type="range" min="1" max="60" step="1" value="10"><input id="tEnd" type="number" min="1" max="60" step="1" value="10"></label>
+      </div>
     </div>
     <div class="actions">
       <button data-preset="positive">r=+0.3, S=1</button><button data-preset="negative">r=−0.3, S=1</button><button data-preset="open">r=+0.3, S=0</button><button id="save" class="secondary">Сохранить вариант</button><button id="clear" class="secondary">Очистить варианты</button><button id="export" class="secondary">Экспорт CSV</button>
