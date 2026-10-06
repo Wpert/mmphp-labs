@@ -24,10 +24,13 @@ const parameterIds = ["r", "s", "lambda", "h", "tEnd"] as const;
 
 type ParameterId = (typeof parameterIds)[number];
 type SavedRun = {
+  parameters: SimulationParameters;
+  metrics: TransitionMetrics;
   result: SimulationResult;
 };
 
 const saved: SavedRun[] = [];
+let current: SavedRun | undefined;
 
 function element<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -66,30 +69,54 @@ function setParameter(id: ParameterId, value: number): void {
   element<HTMLInputElement>(`${id}Range`).value = String(value);
 }
 
-function formatMetric(value: number, index: number): string {
-  if (index >= 5) return value.toExponential(3);
-  return value.toFixed(index > 1 ? 4 : 2);
+function formatMetric(value: number, digits: number, exponential = false): string {
+  if (!Number.isFinite(value)) return "—";
+  if (exponential) return value.toExponential(3);
+  return value.toFixed(digits);
 }
 
-function renderMetrics(metrics: TransitionMetrics): void {
-  const values = [
-    metrics.r,
-    metrics.s,
-    metrics.nExtreme,
-    metrics.nFinal,
-    metrics.fuelTemperatureFinal,
-    metrics.deltaRho,
-    metrics.deltaRhoOverBeta,
+function metricCells(entry: SavedRun): string[] {
+  const { parameters, metrics } = entry;
+  return [
+    formatMetric(parameters.r, 2),
+    formatMetric(parameters.s, 2),
+    formatMetric(parameters.lambda, 4),
+    formatMetric(metrics.nExtreme, 4),
+    formatMetric(metrics.nFinal, 4),
+    formatMetric(metrics.fuelTemperatureFinal, 2),
+    formatMetric(metrics.deltaRho, 3, true),
+    formatMetric(metrics.deltaRhoOverBeta, 3, true),
   ];
-  const row = document.createElement("tr");
+}
 
-  values.forEach((value, index) => {
-    const cell = document.createElement("td");
-    cell.textContent = formatMetric(value, index);
-    row.append(cell);
-  });
+function tableEntries(): SavedRun[] {
+  if (saved.length > 0) return saved;
+  return current ? [current] : [];
+}
 
-  element("metrics").replaceChildren(row);
+function renderMetrics(): void {
+  const body = element("metrics");
+  body.replaceChildren();
+  for (const entry of tableEntries()) {
+    const row = document.createElement("tr");
+    for (const value of metricCells(entry)) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  element("tableNote").textContent =
+    saved.length > 0
+      ? `Сохранено вариантов: ${saved.length}.`
+      : "Пока нет сохранённых вариантов, в таблице текущий расчёт.";
+}
+
+function downloadCsv(filename: string, lines: string[]): void {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([`\uFEFF${lines.join("\n")}\n`], { type: "text/csv;charset=utf-8" }));
+  link.download = filename;
+  link.click();
 }
 
 function run(): SavedRun | undefined {
@@ -101,6 +128,7 @@ function run(): SavedRun | undefined {
 
   const result = simulate(parameters);
   const metrics = transitionMetrics(parameters, result);
+  current = { parameters, metrics, result };
   drawChart(element<HTMLCanvasElement>("power"), result.t, result.n, POWER_COLOR, "N");
   drawChart(
     element<HTMLCanvasElement>("temp"),
@@ -110,10 +138,10 @@ function run(): SavedRun | undefined {
     "TТ, °C",
   );
   drawChart(element<HTMLCanvasElement>("precursors"), result.t, result.c, PRECURSOR_COLOR, "C");
-  renderMetrics(metrics);
+  renderMetrics();
   status.textContent = `Расчёт: ${result.t.length} точек, t=${parameters.tEnd} с`;
 
-  return { result };
+  return current;
 }
 
 function bindParameters(): void {
@@ -145,10 +173,11 @@ function bindPresets(): void {
 
 function bindSavedRuns(): void {
   element("save").addEventListener("click", () => {
-    const current = run();
-    if (!current) return;
-    saved.push(current);
-    element("status").textContent = `Сохранено вариантов: ${saved.length}`;
+    const entry = run();
+    if (!entry) return;
+    saved.push(entry);
+    renderMetrics();
+    element("status").textContent = `В таблицу добавлен вариант ${saved.length}`;
   });
 
   element("clear").addEventListener("click", () => {
@@ -157,25 +186,25 @@ function bindSavedRuns(): void {
   });
 
   element("export").addEventListener("click", () => {
-    if (saved.length === 0) {
-      const current = run();
-      if (!current) return;
-      saved.push(current);
-    }
-
+    const runs = saved.length > 0 ? saved : current ? [current] : [];
+    if (runs.length === 0) return;
     const lines = ["run,t,N,C,T"];
-    saved.forEach((entry, index) => {
+    runs.forEach((entry, index) => {
       entry.result.t.forEach((time, point) => {
         lines.push(
           `${index + 1},${time},${entry.result.n[point]},${entry.result.c[point]},${entry.result.temp[point]}`,
         );
       });
     });
+    downloadCsv("lab01_temperature_feedback.csv", lines);
+  });
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(new Blob([`${lines.join("\n")}\n`], { type: "text/csv" }));
-    link.download = "lab01_temperature_feedback.csv";
-    link.click();
+  element("exportTable").addEventListener("click", () => {
+    const rows = tableEntries();
+    if (rows.length === 0) return;
+    const lines = ["r,S,lambda,N_extreme,N_final,T_fuel_final,delta_rho,delta_rho_over_beta"];
+    for (const entry of rows) lines.push(metricCells(entry).join(","));
+    downloadCsv("lab01_metrics.csv", lines);
   });
 }
 

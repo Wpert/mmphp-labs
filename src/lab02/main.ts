@@ -35,6 +35,8 @@ type LogId = (typeof logIds)[number];
 type SavedRun = {
   label: string;
   color: string;
+  parameters: SimulationParameters;
+  metrics: TransitionMetrics;
   result: SimulationResult;
 };
 
@@ -67,6 +69,7 @@ const REFERENCE: ReferenceParameters = {
 };
 
 const saved: SavedRun[] = [];
+let current: SavedRun | undefined;
 
 function element<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -151,11 +154,19 @@ function formatOptional(value: number | null, digits: number): string {
   return value === null ? "—" : formatSigned(value, digits);
 }
 
-function renderMetrics(metrics: TransitionMetrics): void {
+function metricCells(entry: SavedRun): string[] {
+  const { parameters, metrics } = entry;
   const blownUp = metrics.regime === "расходится";
-  const values = [
-    String(metrics.a),
-    String(metrics.b),
+  return [
+    String(parameters.a),
+    String(parameters.b),
+    formatInput(parameters.alphaW),
+    formatInput(parameters.x0),
+    formatInput(parameters.tauP),
+    formatInput(parameters.nUst),
+    formatInput(parameters.l),
+    formatInput(parameters.beta),
+    formatInput(parameters.lambda),
     formatSigned(metrics.dw0, 3),
     blownUp ? "—" : formatSigned(metrics.dwFinal, 4),
     blownUp ? "—" : formatSigned(metrics.powerFinal, 4),
@@ -164,19 +175,42 @@ function renderMetrics(metrics: TransitionMetrics): void {
     formatOptional(metrics.period, 3),
     metrics.regime,
   ];
-  const row = document.createElement("tr");
-  for (const value of values) {
-    const cell = document.createElement("td");
-    cell.textContent = value;
-    row.append(cell);
-  }
-  element("metrics").replaceChildren(row);
+}
 
-  const theory = metrics.theoreticalPeriod;
+function tableEntries(): SavedRun[] {
+  if (saved.length > 0) return saved;
+  return current ? [current] : [];
+}
+
+function renderMetrics(): void {
+  const body = element("metrics");
+  body.replaceChildren();
+  for (const entry of tableEntries()) {
+    const row = document.createElement("tr");
+    for (const value of metricCells(entry)) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  element("tableNote").textContent =
+    saved.length > 0
+      ? `Сохранено вариантов: ${saved.length}.`
+      : "Пока нет сохранённых вариантов, в таблице текущий расчёт.";
+
+  const theory = current?.metrics.theoreticalPeriod ?? null;
   element("periodNote").textContent =
     theory === null
       ? "Оценка периода не определена: коэффициент усиления равен нулю."
       : `Оценка периода регулятора 2π√(τ_p / x_0) = ${theory.toFixed(3)} с.`;
+}
+
+function downloadCsv(filename: string, lines: string[]): void {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([`\uFEFF${lines.join("\n")}\n`], { type: "text/csv;charset=utf-8" }));
+  link.download = filename;
+  link.click();
 }
 
 function series(result: SimulationResult, key: "dw" | "dc" | "rho" | "z", color: string, dashed = false): ChartSeries {
@@ -266,7 +300,7 @@ function scheduleRun(): void {
   scheduledRun = window.setTimeout(() => run(), 40);
 }
 
-function run(): SimulationResult | undefined {
+function run(): SavedRun | undefined {
   const parameters = readParameters();
   const status = element("status");
   if (!canIntegrate(parameters)) {
@@ -282,14 +316,21 @@ function run(): SimulationResult | undefined {
 
   const result = simulate(parameters);
   const metrics = transitionMetrics(parameters, result);
+  current = {
+    label: "текущий",
+    color: POWER_COLOR,
+    parameters,
+    metrics,
+    result,
+  };
   draw(result);
-  renderMetrics(metrics);
+  renderMetrics();
   const dw0 = initialDeviation(parameters.nUst);
   const theory = theoreticalPeriod(parameters);
   status.textContent = result.diverged
     ? `Расчёт расходится. δw(0) = ${formatSigned(dw0, 3)}. Уменьшите x_0 или шаг h.`
     : `δw(0) = ${formatSigned(dw0, 3)}, точек ${result.t.length}, t = ${parameters.tEnd} с${theory ? `, Tтеор = ${theory.toFixed(3)} с` : ""}`;
-  return result;
+  return current;
 }
 
 function bindLinear(): void {
@@ -354,16 +395,19 @@ function bindPresets(): void {
 
 function bindSavedRuns(): void {
   element("save").addEventListener("click", () => {
-    const current = run();
-    if (!current) return;
-    const parameters = readParameters();
+    const entry = run();
+    if (!entry) return;
+    const parameters = entry.parameters;
     saved.push({
       label: runLabel(parameters),
       color: SAVED_COLORS[saved.length % SAVED_COLORS.length],
-      result: forPlot(current),
+      parameters,
+      metrics: entry.metrics,
+      result: forPlot(entry.result),
     });
-    draw(current);
-    element("status").textContent = `Сохранено вариантов: ${saved.length}. Пунктир — сохранённые кривые.`;
+    draw(entry.result);
+    renderMetrics();
+    element("status").textContent = `В таблицу добавлен вариант ${saved.length}. Пунктир — сохранённые кривые.`;
   });
 
   element("clear").addEventListener("click", () => {
@@ -372,9 +416,8 @@ function bindSavedRuns(): void {
   });
 
   element("export").addEventListener("click", () => {
-    const current = run();
-    if (!current) return;
-    const runs = saved.length > 0 ? saved : [{ label: "текущий", color: POWER_COLOR, result: forPlot(current) }];
+    const runs = saved.length > 0 ? saved : current ? [{ ...current, result: forPlot(current.result) }] : [];
+    if (runs.length === 0) return;
     const lines = ["run,label,t,dw,dc,rho,z"];
     runs.forEach((entry, index) => {
       entry.result.t.forEach((time, point) => {
@@ -383,11 +426,17 @@ function bindSavedRuns(): void {
         );
       });
     });
+    downloadCsv("lab02_power_regulation.csv", lines);
+  });
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(new Blob([`${lines.join("\n")}\n`], { type: "text/csv" }));
-    link.download = "lab02_power_regulation.csv";
-    link.click();
+  element("exportTable").addEventListener("click", () => {
+    const rows = tableEntries();
+    if (rows.length === 0) return;
+    const lines = [
+      "A,B,alpha_w,x0,tau_p,n_ust,l,beta,lambda,dw0,dw_final,n_over_n_ust,overshoot,t_reg_s,T_s,regime",
+    ];
+    for (const entry of rows) lines.push(metricCells(entry).join(","));
+    downloadCsv("lab02_metrics.csv", lines);
   });
 }
 

@@ -144,7 +144,26 @@
     <div><div class="plot-title">Концентрация предшественников <span class="math-label">\(C\)</span></div><canvas id="precursors" class="plot"></canvas></div>
   </section>
 
-  <section class="card"><h2>Показатели переходного процесса</h2><table><thead><tr><th><span class="math-label">\(r\)</span></th><th><span class="math-label">\(S\)</span></th><th><span class="math-label">\(N_{\mathrm{экстр}}\)</span></th><th><span class="math-label">\(N_{\mathrm{кон}}\)</span></th><th><span class="math-label">\(T_{T,\,\mathrm{кон}}\)</span>, <span class="math-label">\(^{\circ}\mathrm{C}\)</span></th><th><span class="math-label">\(\Delta\rho\)</span></th><th><span class="math-label">\(\Delta\rho/\beta\)</span></th></tr></thead><tbody id="metrics"></tbody></table></section>
+  <section class="card">
+    <h2>Показатели переходного процесса</h2>
+    <p id="tableNote" class="note">Пока нет сохранённых вариантов, в таблице текущий расчёт.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span class="math-label">\(r\)</span></th>
+          <th><span class="math-label">\(S\)</span></th>
+          <th><span class="math-label">\(\lambda\)</span></th>
+          <th><span class="math-label">\(N_{\mathrm{экстр}}\)</span></th>
+          <th><span class="math-label">\(N_{\mathrm{кон}}\)</span></th>
+          <th><span class="math-label">\(T_{T,\,\mathrm{кон}}\)</span>, <span class="math-label">\(^{\circ}\mathrm{C}\)</span></th>
+          <th><span class="math-label">\(\Delta\rho\)</span></th>
+          <th><span class="math-label">\(\Delta\rho/\beta\)</span></th>
+        </tr></thead>
+        <tbody id="metrics"></tbody>
+      </table>
+    </div>
+    <div class="actions"><button id="exportTable" class="secondary" type="button">Экспорт таблицы</button></div>
+  </section>
 
   <script src="./katex.min.js"></script>
   <script src="./js/main.js"></script>

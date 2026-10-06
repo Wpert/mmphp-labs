@@ -189,11 +189,19 @@
 
   <section class="card">
     <h2>Показатели переходного процесса</h2>
+    <p id="tableNote" class="note">Пока нет сохранённых вариантов, в таблице текущий расчёт.</p>
     <div class="table-wrap">
       <table>
         <thead><tr>
           <th><span class="math-label">\(A\)</span></th>
           <th><span class="math-label">\(B\)</span></th>
+          <th><span class="math-label">\(\alpha_w\)</span></th>
+          <th><span class="math-label">\(x_0\)</span></th>
+          <th><span class="math-label">\(\tau_p\)</span></th>
+          <th><span class="math-label">\(n_{\mathrm{уст}}\)</span></th>
+          <th><span class="math-label">\(l\)</span></th>
+          <th><span class="math-label">\(\beta\)</span></th>
+          <th><span class="math-label">\(\lambda\)</span></th>
           <th><span class="math-label">\(\delta w(0)\)</span></th>
           <th><span class="math-label">\(\delta w_{\mathrm{кон}}\)</span></th>
           <th><span class="math-label">\(n/n_{\mathrm{уст}}\)</span></th>
@@ -205,6 +213,7 @@
         <tbody id="metrics"></tbody>
       </table>
     </div>
+    <div class="actions"><button id="exportTable" class="secondary" type="button">Экспорт таблицы</button></div>
     <p id="periodNote" class="note"></p>
   </section>
 
